@@ -1,0 +1,16 @@
+create table settings(id int primary key default 1 check(id=1),name text,address text,phone text,whatsapp text,hours text,instagram text,facebook text,hero_url text,about text);
+insert into settings(id,name,address) values(1,'HN Foods','F6, Plot 19, Agha Khan Road, behind Kaspas Desserts, Sector F-6 Markaz, Islamabad, 04403, Pakistan');
+create table menu_items(id bigint generated always as identity primary key,name text not null,description text,price numeric not null check(price>=0),category text not null,image_url text,available boolean default true,popular boolean default false);
+create table gallery(id bigint generated always as identity primary key,image_url text not null,caption text);
+create table messages(id bigint generated always as identity primary key,name text,phone text,message text,created_at timestamptz default now());
+alter table settings enable row level security;alter table menu_items enable row level security;alter table gallery enable row level security;alter table messages enable row level security;
+create policy "read" on settings for select using(true);create policy "read" on menu_items for select using(true);create policy "read" on gallery for select using(true);
+create policy "admin" on settings for all to authenticated using(true) with check(true);
+create policy "admin" on menu_items for all to authenticated using(true) with check(true);
+create policy "admin" on gallery for all to authenticated using(true) with check(true);
+create policy "send" on messages for insert to anon,authenticated with check(true);
+create policy "admin read" on messages for select to authenticated using(true);
+insert into storage.buckets(id,name,public) values('images','images',true);
+create policy "img read" on storage.objects for select using(bucket_id='images');
+create policy "img write" on storage.objects for insert to authenticated with check(bucket_id='images');
+create policy "img delete" on storage.objects for delete to authenticated using(bucket_id='images');
